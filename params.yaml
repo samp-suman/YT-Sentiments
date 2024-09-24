@@ -1,0 +1,23 @@
+# params.yaml
+
+# Used in Data Ingestion
+data_source:
+  url: "https://raw.githubusercontent.com/campusx-team/Text-Datasets/refs/heads/main/Reddit_Data.csv"
+
+# Used in data processing
+columns:
+  features: ['clean_comment'] # For multiple columns having text data that need to be processed
+  target: 'category'
+data_ingestion:
+  test_size: 0.20
+  val_size: 0.10
+  random_state: 42
+
+# At feature extraction stage can use both or any one of them
+
+feature_extraction:
+  bow: # Bag of Words approach
+    max_features: 10000  # For BOW
+    ngram_range: [1, 2]  # Adjust as needed
+
+  

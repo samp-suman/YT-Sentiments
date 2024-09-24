@@ -1,0 +1,33 @@
+stages:
+  ingest_data:
+    cmd: python src/data/data_ingestion.py
+    deps:
+    - src/data/data_ingestion.py
+    outs:
+    - data/raw/data.csv
+    params:
+    - data_source.url # For data source url
+
+  pre_process:
+    cmd: python src/data/data_processing.py
+    deps:
+    - src/data/data_processing.py
+    - data/raw/data.csv
+    outs:
+    - data/interim/train_processed.csv
+    - data/interim/test_processed.csv
+    - data/interim/val_processed.csv
+    params:
+    - columns # For text column and target column
+    - data_ingestion # For splits
+  
+  feature_extraction:
+    cmd: python src/features/feature_extraction.py
+    deps:
+    - src/features/feature_extraction.py
+    - data/interim/train_processed.csv
+    outs:
+    - data/processed/train_bow_features.csv
+    params:
+    - feature_extraction
+

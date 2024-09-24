@@ -1,0 +1,76 @@
+schema: '2.0'
+stages:
+  ingest_data:
+    cmd: python src/data/data_ingestion.py
+    deps:
+    - path: src/data/data_ingestion.py
+      hash: md5
+      md5: 3738577162e96480fbe677b11dd1e447
+      size: 785
+    params:
+      params.yaml:
+        data_source.url: 
+          https://raw.githubusercontent.com/campusx-team/Text-Datasets/refs/heads/main/Reddit_Data.csv
+    outs:
+    - path: data/raw/data.csv
+      hash: md5
+      md5: 4144fea990fc973c5554efd820e8ae70
+      size: 6926181
+  pre_process:
+    cmd: python src/data/data_processing.py
+    deps:
+    - path: data/raw/data.csv
+      hash: md5
+      md5: 4144fea990fc973c5554efd820e8ae70
+      size: 6926181
+    - path: src/data/data_processing.py
+      hash: md5
+      md5: 7e473e729411799457d0396d7dab966d
+      size: 3702
+    params:
+      params.yaml:
+        columns:
+          features:
+          - clean_comment
+          target: category
+        data_ingestion:
+          test_size: 0.2
+          val_size: 0.1
+          random_state: 42
+    outs:
+    - path: data/interim/test_processed.csv
+      hash: md5
+      md5: 5e39022d4dbb24b4579d32c72212fbb0
+      size: 2358870
+    - path: data/interim/train_processed.csv
+      hash: md5
+      md5: 75e6f31c6d335cef802763046f812f0d
+      size: 8576334
+    - path: data/interim/val_processed.csv
+      hash: md5
+      md5: 7bc25158086c25d7705dea55f0463e6e
+      size: 967973
+  feature_extraction:
+    cmd: python src/features/feature_extraction.py
+    deps:
+    - path: data/interim/train_processed.csv
+      hash: md5
+      md5: 75e6f31c6d335cef802763046f812f0d
+      size: 8576334
+    - path: src/features/feature_extraction.py
+      hash: md5
+      md5: 906f7c1e1de49eba0a92af12de64a247
+      size: 1690
+    params:
+      params.yaml:
+        feature_extraction:
+          bow:
+            max_features: 10000
+            ngram_range:
+            - 1
+            - 2
+    outs:
+    - path: data/processed/train_bow_features.csv
+      hash: md5
+      md5: 211f22e5c79d506ef643cc05dbf29d36
+      size: 532196952
