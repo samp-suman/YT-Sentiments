@@ -35,9 +35,12 @@ def main():
         max_features = bow_params['max_features']
         ngram_range = tuple(bow_params['ngram_range'])
         train_bow, test_bow, val_bow, feature_names = extract_bow_features(train_data, test_data, val_data, max_features, ngram_range)
+        
         train_features_df = pd.DataFrame(train_bow.toarray(), columns=feature_names)
         test_features_df = pd.DataFrame(test_bow.toarray(), columns=feature_names)
         val_features_df = pd.DataFrame(val_bow.toarray(), columns=feature_names)
+
+
         train_features_df.to_csv(os.path.join('./data/processed', 'train_bow_features.csv'), index=False)
         test_features_df.to_csv(os.path.join('./data/processed', 'test_bow_features.csv'), index=False)
         val_features_df.to_csv(os.path.join('./data/processed', 'val_bow_features.csv'), index=False)

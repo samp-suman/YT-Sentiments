@@ -17,17 +17,23 @@ stages:
     - data/interim/train_processed.csv
     - data/interim/test_processed.csv
     - data/interim/val_processed.csv
+    - data/interim/spelling_correction_cache.json
     params:
     - columns # For text column and target column
     - data_ingestion # For splits
+    - data_source.cache_file_url # For spelling correction
   
   feature_extraction:
     cmd: python src/features/feature_extraction.py
     deps:
     - src/features/feature_extraction.py
     - data/interim/train_processed.csv
+    - data/interim/test_processed.csv
+    - data/interim/val_processed.csv
     outs:
     - data/processed/train_bow_features.csv
+    - data/processed/test_bow_features.csv
+    - data/processed/val_bow_features.csv
     params:
     - feature_extraction
 

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
-import sys, os
+import sys, os, json, requests
 import nltk
 import string
 import numpy as np
@@ -47,6 +47,11 @@ contractions_dict = {
     # Add more as needed
 }
 
+# Define the path for the cache file
+params = load_params()
+cache_url = params['data_source']['cache_file_url']
+
+
 def expand_contractions(text):
     """Replace contractions with their full forms."""
     for contraction, full_form in contractions_dict.items():
@@ -60,32 +65,39 @@ def translate_emojis(text):
 
 def remove_unwanted_characters(text):
     """Remove all characters except English, Devanagari, apostrophes, and spaces."""
-    return re.sub(r"[^\u0900-\u097Fa-zA-Z\s']", '', text)
+    text = re.sub(r"[^\u0900-\u097Fa-zA-Z\s']", '', text)
+    return text
 
 def remove_newlines(text):
     """Replace newlines with spaces."""
-    return text.replace('\n', ' ')
+    text = text.replace('\n', ' ')
+    return text
 
 def compress_spaces(text):
     """Replace multiple spaces with a single space."""
-    return re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 def limit_repeated_characters(text):
     """Limit repeated characters to a maximum of two."""
-    return re.sub(r'(.)\1{2,}', r'\1\1', text)
+    text = re.sub(r'(.)\1{2,}', r'\1\1', text)
+    return text
 
 def lemmatization(text):
     """Lemmatize the text."""
-    return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
+    text = " ".join([lemmatizer.lemmatize(word) for word in text.split()])
+    return text
 
 def remove_stop_words(text):
     """Remove stop words from the text."""
-    return " ".join([word for word in text.split() if word not in stop_words])
+    text = " ".join([word for word in text.split() if word not in stop_words])
+    return text
 
 
 def removing_numbers(text):
     """Remove numbers from the text."""
-    return ''.join(char for char in text if not char.isdigit())
+    text = ''.join(char for char in text if not char.isdigit())
+    return text
 
 def lower_case(text):
     """Convert text to lower case."""
@@ -93,45 +105,89 @@ def lower_case(text):
 
 def removing_punctuations(text):
     """Remove punctuations from the text."""
-    return re.sub(r'[{}]+'.format(re.escape(string.punctuation)), ' ', text).strip()
+    text = re.sub(r'[{}]+'.format(re.escape(string.punctuation)), ' ', text).strip()
+    return text
 
 def removing_urls(text):
     """Remove URLs from the text."""
-    return re.sub(r'https?://\S+|www\.\S+', '', text)
+    text = re.sub(r'https?://\S+|www\.\S+', '', text)
+    return text
+
+# Load Cache to store already corrected words
+response = requests.get(cache_url)
+corrected_cache = response.json() if response.status_code == 200 else {}
+cache_file_path = "data/interim/spelling_correction_cache.json"
 
 def spelling_correction(text):
-    """Perform spelling correction on English words only, skipping valid words."""
+    """Perform spelling correction on English words only, skipping valid words and using a cache for optimization."""
+    
+    # Limit repeated characters first to minimize unnecessary corrections
     text = limit_repeated_characters(text)
     corrected_text = []
+
     for word in text.split():
-        # Skip spell correction for words in the valid_words set
-        if word.lower() in valid_words:
+        # Skip spell correction for words in the valid_words set or words with less than 3 characters
+        if word.lower() in valid_words or len(word) < 3:
             corrected_text.append(word)
         else:
-            if not re.search(r'[\u0900-\u097F]', word):
-                # Correct English words only
-                corrected_word = str(TextBlob(word).correct())
-                corrected_text.append(corrected_word)
+            # Use cached corrections if available
+            if word in corrected_cache:
+                corrected_text.append(corrected_cache[word])
             else:
-                corrected_text.append(word)
+                if not re.search(r'[\u0900-\u097F]', word):  # Correct only English words
+                    corrected_word = str(TextBlob(word).correct())
+                    corrected_cache[word] = corrected_word  # Cache the result
+                    corrected_text.append(corrected_word)
+                else:
+                    corrected_text.append(word)
+
+    # Save the cache to a JSON file at the end of processing
+    with open(cache_file_path, 'w') as cache_file:
+        json.dump(corrected_cache, cache_file)
+
     return ' '.join(corrected_text)
 
+
+
 def process_text(df):
-    """Normalize the text data, including emoji translation."""
-    df['content'] = (df['clean_comment']
-                     .apply(lower_case)  # Step 1: Convert to lower case
-                     .apply(translate_emojis)  # Step 2: Translate emojis to text
-                     .apply(expand_contractions)  # Step 3: Replace contractions
-                     .apply(remove_unwanted_characters)  # Step 4: Remove unwanted characters
-                     .apply(removing_numbers)  # Step 5: Remove numbers
-                     .apply(removing_punctuations)  # Step 6: Remove punctuation (apostrophes kept)
-                     .apply(removing_urls)  # Step 7: Remove URLs
-                     .apply(remove_newlines)  # Step 8: Remove newlines
-                     .apply(limit_repeated_characters)  # Step 9: Limit repeated characters
-                     .apply(remove_stop_words)  # Step 10: Remove stop words
-                     .apply(lemmatization)  # Step 11: Lemmatization
-                     .apply(spelling_correction)  # Step 12: Spell correction for English
-                     .apply(compress_spaces))  # Step 13: Ensure only single space
+    """Normalize the text data, including emoji translation and URL handling."""
+    
+    # Step 1: Convert to lower case
+    df['content'] = df['clean_comment'].apply(lower_case)
+    print("Step 1: Lowercasing - Done")
+
+    # Step 2: Translate emojis to text
+    df['content'] = df['content'].apply(translate_emojis)
+    print("Step 2: Emoji translation - Done")
+
+    # Step 3: Handle URLs before removing unwanted characters
+    df['content'] = df['content'].apply(removing_urls)
+    print("Step 3: URL removal - Done")
+
+    # Step 4: Replace contractions
+    df['content'] = df['content'].apply(expand_contractions)
+    print("Step 4: Contractions expansion - Done")
+
+    # Step 5: Remove unwanted characters (punctuation and newlines already handled)
+    df['content'] = df['content'].apply(remove_unwanted_characters)
+    print("Step 5: Unwanted character removal - Done")
+
+    # Step 6: Remove stop words
+    df['content'] = df['content'].apply(remove_stop_words)
+    print("Step 6: Stop word removal - Done")
+
+    # Step 7: Lemmatization
+    df['content'] = df['content'].apply(lemmatization)
+    print("Step 7: Lemmatization - Done")
+
+    # Step 8: Spell correction for English
+    df['content'] = df['content'].apply(spelling_correction)
+    print("Step 8: Spell correction - Done")
+
+    # Step 9: Ensure only single space
+    df['content'] = df['content'].apply(compress_spaces)
+    print("Step 9: Space compression - Done")
+
     return df
 
 def concat_text_features(df, text_features):
@@ -143,14 +199,18 @@ def main():
         # Fetch the data from data/raw
         data = pd.read_csv('./data/raw/data.csv')
 
-        # Loading params for
-        params = load_params()
+        # Load parameters
         text_features = params['columns']['features']
         target = params['columns']['target']
         test_size = params['data_ingestion']['test_size']
         val_size = params['data_ingestion']['val_size'] 
         random_state = params['data_ingestion']['random_state']
-        data.dropna(subset=text_features, inplace=True)
+        
+        # Dropping rows with missing text data 
+        data.dropna(subset=text_features, how='all', inplace=True)
+
+        # If we have multiple text columns, we need to concatenate them
+        # text_features is a list of text column names from params.yml
         data = concat_text_features(data, text_features)
 
         processed_data = process_text(data)

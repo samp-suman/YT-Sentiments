@@ -3,6 +3,7 @@
 # Used in Data Ingestion
 data_source:
   url: "https://raw.githubusercontent.com/campusx-team/Text-Datasets/refs/heads/main/Reddit_Data.csv"
+  cache_file_url: "https://raw.githubusercontent.com/campusx-team/Text-Datasets/refs/heads/main/spelling_correction_cache.json"
 
 # Used in data processing
 columns:

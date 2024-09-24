@@ -25,8 +25,8 @@ stages:
       size: 6926181
     - path: src/data/data_processing.py
       hash: md5
-      md5: 7e473e729411799457d0396d7dab966d
-      size: 3702
+      md5: 70602f3f64707421a0624dfb4dad1ec2
+      size: 8268
     params:
       params.yaml:
         columns:
@@ -37,30 +37,44 @@ stages:
           test_size: 0.2
           val_size: 0.1
           random_state: 42
+        data_source.cache_file_url: 
+          https://raw.githubusercontent.com/campusx-team/Text-Datasets/refs/heads/main/spelling_correction_cache.json
     outs:
+    - path: data/interim/spelling_correction_cache.json
+      hash: md5
+      md5: a145a18a6c6f3f8e54a0b4d54575160b
+      size: 1030210
     - path: data/interim/test_processed.csv
       hash: md5
-      md5: 5e39022d4dbb24b4579d32c72212fbb0
-      size: 2358870
+      md5: 72a5f5f3e2a01380fd5b8256ec84ea24
+      size: 3693327
     - path: data/interim/train_processed.csv
       hash: md5
-      md5: 75e6f31c6d335cef802763046f812f0d
-      size: 8576334
+      md5: 6f1b51a934efaf08d0e41c05ead026e1
+      size: 13409890
     - path: data/interim/val_processed.csv
       hash: md5
-      md5: 7bc25158086c25d7705dea55f0463e6e
-      size: 967973
+      md5: 7ac27ee1bef57770238d884158609273
+      size: 1513380
   feature_extraction:
     cmd: python src/features/feature_extraction.py
     deps:
+    - path: data/interim/test_processed.csv
+      hash: md5
+      md5: 72a5f5f3e2a01380fd5b8256ec84ea24
+      size: 3693327
     - path: data/interim/train_processed.csv
       hash: md5
-      md5: 75e6f31c6d335cef802763046f812f0d
-      size: 8576334
+      md5: 6f1b51a934efaf08d0e41c05ead026e1
+      size: 13409890
+    - path: data/interim/val_processed.csv
+      hash: md5
+      md5: 7ac27ee1bef57770238d884158609273
+      size: 1513380
     - path: src/features/feature_extraction.py
       hash: md5
-      md5: 906f7c1e1de49eba0a92af12de64a247
-      size: 1690
+      md5: 4a96164b9329f313e8a2ced142c9eb75
+      size: 2278
     params:
       params.yaml:
         feature_extraction:
@@ -70,7 +84,15 @@ stages:
             - 1
             - 2
     outs:
+    - path: data/processed/test_bow_features.csv
+      hash: md5
+      md5: 990368d4e277df72fd9f9628882199ce
+      size: 148697870
     - path: data/processed/train_bow_features.csv
       hash: md5
-      md5: 211f22e5c79d506ef643cc05dbf29d36
-      size: 532196952
+      md5: 7099ccc121b24ada9c90ca433b3ae4eb
+      size: 535059565
+    - path: data/processed/val_bow_features.csv
+      hash: md5
+      md5: b5a24b73c91940099a9a98cb4a93d13c
+      size: 59532884
