@@ -25,8 +25,8 @@ stages:
       size: 6926181
     - path: src/data/data_processing.py
       hash: md5
-      md5: 70602f3f64707421a0624dfb4dad1ec2
-      size: 8268
+      md5: f857c3298602d12a2dfa8942ee44c303
+      size: 8308
     params:
       params.yaml:
         columns:
@@ -46,35 +46,35 @@ stages:
       size: 1030210
     - path: data/interim/test_processed.csv
       hash: md5
-      md5: 72a5f5f3e2a01380fd5b8256ec84ea24
-      size: 3693327
+      md5: 236397e110ee5584058d0c25dc0d7637
+      size: 2342968
     - path: data/interim/train_processed.csv
       hash: md5
-      md5: 6f1b51a934efaf08d0e41c05ead026e1
-      size: 13409890
+      md5: 20bd1f5a67e9f4f9c6e95aea6019a6cd
+      size: 8507237
     - path: data/interim/val_processed.csv
       hash: md5
-      md5: 7ac27ee1bef57770238d884158609273
-      size: 1513380
+      md5: ffda4c511d256eb8821b12314812fbdc
+      size: 960317
   feature_extraction:
     cmd: python src/features/feature_extraction.py
     deps:
     - path: data/interim/test_processed.csv
       hash: md5
-      md5: 72a5f5f3e2a01380fd5b8256ec84ea24
-      size: 3693327
+      md5: 236397e110ee5584058d0c25dc0d7637
+      size: 2342968
     - path: data/interim/train_processed.csv
       hash: md5
-      md5: 6f1b51a934efaf08d0e41c05ead026e1
-      size: 13409890
+      md5: 20bd1f5a67e9f4f9c6e95aea6019a6cd
+      size: 8507237
     - path: data/interim/val_processed.csv
       hash: md5
-      md5: 7ac27ee1bef57770238d884158609273
-      size: 1513380
+      md5: ffda4c511d256eb8821b12314812fbdc
+      size: 960317
     - path: src/features/feature_extraction.py
       hash: md5
-      md5: 4a96164b9329f313e8a2ced142c9eb75
-      size: 2278
+      md5: 532fce8c6b2ca17d8187185953869247
+      size: 2584
     params:
       params.yaml:
         feature_extraction:
@@ -86,13 +86,13 @@ stages:
     outs:
     - path: data/processed/test_bow_features.csv
       hash: md5
-      md5: 990368d4e277df72fd9f9628882199ce
-      size: 148697870
+      md5: ffa50325f84d2cacb33c466097951127
+      size: 147689922
     - path: data/processed/train_bow_features.csv
       hash: md5
-      md5: 7099ccc121b24ada9c90ca433b3ae4eb
-      size: 535059565
+      md5: caf1cfdda0955a9a46a887a10994045e
+      size: 531490714
     - path: data/processed/val_bow_features.csv
       hash: md5
-      md5: b5a24b73c91940099a9a98cb4a93d13c
-      size: 59532884
+      md5: fddbb714b5533eafdf676dc462c01e68
+      size: 59066641

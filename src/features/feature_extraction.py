@@ -14,9 +14,9 @@ from utility.utility import load_params
 def extract_bow_features(df_train, df_test, df_val, max_features, ngram_range):
     """Create Bag of Words features."""
     vectorizer = CountVectorizer(max_features=max_features, ngram_range=ngram_range)
-    train_bow = vectorizer.fit_transform(df_train['text_feature'])
-    test_bow = vectorizer.transform(df_test['text_feature'])
-    val_bow = vectorizer.transform(df_val['text_feature'])
+    train_bow = vectorizer.fit_transform(df_train['content'])
+    test_bow = vectorizer.transform(df_test['content'])
+    val_bow = vectorizer.transform(df_val['content'])
     return train_bow, test_bow, val_bow, vectorizer.get_feature_names_out()
 
 
@@ -40,7 +40,11 @@ def main():
         test_features_df = pd.DataFrame(test_bow.toarray(), columns=feature_names)
         val_features_df = pd.DataFrame(val_bow.toarray(), columns=feature_names)
 
+        train_features_df['target_label'] = train_data['category']
+        test_features_df['target_label'] = test_data['category']
+        val_features_df['target_label'] = val_data['category']
 
+        # Store the data inside data/processed
         train_features_df.to_csv(os.path.join('./data/processed', 'train_bow_features.csv'), index=False)
         test_features_df.to_csv(os.path.join('./data/processed', 'test_bow_features.csv'), index=False)
         val_features_df.to_csv(os.path.join('./data/processed', 'val_bow_features.csv'), index=False)

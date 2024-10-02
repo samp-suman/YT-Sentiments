@@ -153,7 +153,7 @@ def process_text(df):
     """Normalize the text data, including emoji translation and URL handling."""
     
     # Step 1: Convert to lower case
-    df['content'] = df['clean_comment'].apply(lower_case)
+    df['content'] = df['text_feature'].apply(lower_case)
     print("Step 1: Lowercasing - Done")
 
     # Step 2: Translate emojis to text
@@ -188,7 +188,10 @@ def process_text(df):
     df['content'] = df['content'].apply(compress_spaces)
     print("Step 9: Space compression - Done")
 
-    return df
+    # Step 10: Remove Nan - if any introduced due to cleanig
+    df.dropna(subset=['content'], inplace=True)
+
+    return df[['text_feature', 'content', 'category']]
 
 def concat_text_features(df, text_features):
     df['text_feature'] = df[text_features].agg(' '.join, axis=1)
