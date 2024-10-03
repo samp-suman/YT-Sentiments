@@ -27,6 +27,11 @@ def main():
         test_data = pd.read_csv('./data/interim/test_processed.csv')
         val_data = pd.read_csv('./data/interim/val_processed.csv')
 
+        print(train_data.info())
+        print(test_data.info())
+        print(val_data.info())
+
+        print(train_data[train_data['content'].isna()])
         # Load parameters
         params = load_params()
         bow_params = params['feature_extraction']['bow']

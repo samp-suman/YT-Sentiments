@@ -21,11 +21,12 @@ nltk.download('wordnet')
 nltk.download('stopwords')
 
 # Precompiled stopwords set for faster lookups
-stop_words = set(stopwords.words("english"))
+stop_words = set(stopwords.words('english')) - {'more', 'most'}
+
 lemmatizer = WordNetLemmatizer()
 
 # To skip spell correction of words in the valid_words set
-valid_words = []
+valid_words = ['naan', 'aap']
 
 # Dictionary for contractions
 contractions_dict = {
@@ -185,11 +186,12 @@ def process_text(df):
     print("Step 8: Spell correction - Done")
 
     # Step 9: Ensure only single space
-    df['content'] = df['content'].apply(compress_spaces)
+    df['content'] = df['content'].apply(compress_spaces).str.strip()
     print("Step 9: Space compression - Done")
 
-    # Step 10: Remove Nan - if any introduced due to cleanig
-    df.dropna(subset=['content'], inplace=True)
+    # Step 10: Remove rows with empty 'content'
+    df = df[df['content'] != '']
+    print("Step 10: Removed rows with empty content - Done")
 
     return df[['text_feature', 'content', 'category']]
 
@@ -215,12 +217,16 @@ def main():
         # If we have multiple text columns, we need to concatenate them
         # text_features is a list of text column names from params.yml
         data = concat_text_features(data, text_features)
+        print(data.info())
 
         processed_data = process_text(data)
+        
+        print(processed_data.info())
         temp_data, test_processed_data = train_test_split(processed_data, test_size=test_size, stratify=processed_data[target], random_state=random_state)
         train_processed_data, val_processed_data = train_test_split(temp_data, test_size=val_size, stratify=temp_data[target], random_state=random_state)
         
-        print("Processed Data")
+        print("Saving Processed Data")
+        
         # Store the data inside data/processed
         data_path = os.path.join("./data", "interim")
         os.makedirs(data_path, exist_ok=True)
